@@ -208,7 +208,6 @@ def add_user():
 
     if id and image and name and password and email:
         add_student = db.reference(f"Students")
-
         add_student.child(id).set(
             {
                 "id": id,
@@ -217,15 +216,10 @@ def add_user():
                 "email": email
             }
         )
-
         studentIDs, imgList = add_image_database()
-
         return render_template("index.html")
 
     return render_template("add_user.html")
-
-
-
 
 #########################################################################################################################
 if __name__ == "__main__":
