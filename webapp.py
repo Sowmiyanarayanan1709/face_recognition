@@ -92,34 +92,31 @@ def generate_frame():
                 if matches[matchIndex]:
                     id = studentIDs[matchIndex]
 
-                    if id not in already_marked_id_student:
-                        studentInfo, imgStudent = dataset(id)
+                    studentInfo, imgStudent = dataset(id)
 
-                        ref = db.reference(f"Students/{id}")
+                    ref = db.reference(f"Students/{id}")
 
-                        modeType = 3
-                        already_marked_id_student.append(id)
-                        already_marked_id_admin.append(id)
+                    modeType = 3
 
-                        imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
+                    imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
 
-                        (w, h), _ = cv2.getTextSize(
-                            str(studentInfo["name"]), cv2.FONT_HERSHEY_COMPLEX, 1, 1
-                        )
-                        offset = (414 - w) // 2
+                    (w, h), _ = cv2.getTextSize(
+                        str(studentInfo["name"]), cv2.FONT_HERSHEY_COMPLEX, 1, 1
+                    )
+                    offset = (414 - w) // 2
 
-                        cv2.putText(
-                            imgBackground,
-                            str(studentInfo["name"]),
-                            (808 + offset, 445),
-                            cv2.FONT_HERSHEY_COMPLEX,
-                            1,
-                            (50, 50, 50),
-                            1,
-                        )
+                    cv2.putText(
+                        imgBackground,
+                        str(studentInfo["name"]),
+                        (808 + offset, 445),
+                        cv2.FONT_HERSHEY_COMPLEX,
+                        1,
+                        (50, 50, 50),
+                        1,
+                    )
 
-                        imgStudentResize = cv2.resize(imgStudent, (216, 216))
-                        imgBackground[175:175 + 216, 909:909 + 216] = imgStudentResize
+                    imgStudentResize = cv2.resize(imgStudent, (216, 216))
+                    imgBackground[175:175 + 216, 909:909 + 216] = imgStudentResize
 
                 else:
                     cvzone.putTextRect(
