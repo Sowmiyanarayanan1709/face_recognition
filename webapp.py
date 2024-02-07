@@ -54,18 +54,9 @@ def generate_frame():
 
     folderModePath = "static/Files/Resources/Modes/"
     modePathList = os.listdir(folderModePath)
-    imgModeList = []
-
-    for path in modePathList:
-        imgModeList.append(cv2.imread(os.path.join(folderModePath, path)))
-
-    modeType = 0
-    id = -1
-    imgStudent = []
-    counter = 0
+    imgModeList = [cv2.imread(os.path.join(folderModePath, path)) for path in modePathList]
 
     # encoding loading ---> to identify if the person is in our database or not.... to detect faces that are known or not
-
     file = open("EncodeFile.p", "rb")
     encodeListKnownWithIds = pickle.load(file)
     file.close()
@@ -76,126 +67,79 @@ def generate_frame():
 
         if not success:
             break
-        else:
-            imgSmall = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-            imgSmall = cv2.cvtColor(imgSmall, cv2.COLOR_BGR2RGB)
 
-            faceCurrentFrame = face_recognition.face_locations(imgSmall)
-            encodeCurrentFrame = face_recognition.face_encodings(
-                imgSmall, faceCurrentFrame
-            )
+        imgSmall = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+        imgSmall = cv2.cvtColor(imgSmall, cv2.COLOR_BGR2RGB)
 
-            imgBackground[162 : 162 + 480, 55 : 55 + 640] = img
-            imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[modeType]
+        faceCurrentFrame = face_recognition.face_locations(imgSmall)
+        encodeCurrentFrame = face_recognition.face_encodings(imgSmall, faceCurrentFrame)
 
-            if faceCurrentFrame:
-                for encodeFace, faceLocation in zip(
-                    encodeCurrentFrame, faceCurrentFrame
-                ):
-                    matches = face_recognition.compare_faces(
-                        encodedFaceKnown, encodeFace
-                    )
-                    faceDistance = face_recognition.face_distance(
-                        encodedFaceKnown, encodeFace
-                    )
+        imgBackground[162:162 + 480, 55:55 + 640] = img
 
-                    matchIndex = np.argmin(faceDistance)
+        if faceCurrentFrame:
+            for encodeFace, faceLocation in zip(encodeCurrentFrame, faceCurrentFrame):
+                matches = face_recognition.compare_faces(encodedFaceKnown, encodeFace)
+                faceDistance = face_recognition.face_distance(encodedFaceKnown, encodeFace)
 
-                    y1, x2, y2, x1 = faceLocation
-                    y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                matchIndex = np.argmin(faceDistance)
 
-                    bbox = 55 + x1, 162 + y1, x2 - x1, y2 - y1
+                y1, x2, y2, x1 = faceLocation
+                y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
 
-                    imgBackground = cvzone.cornerRect(imgBackground, bbox, rt=0)
+                bbox = 55 + x1, 162 + y1, x2 - x1, y2 - y1
+                imgBackground = cvzone.cornerRect(imgBackground, bbox, rt=0)
 
-                    if matches[matchIndex] == True:
-                        id = studentIDs[matchIndex]
+                if matches[matchIndex]:
+                    id = studentIDs[matchIndex]
 
-                        if counter == 0:
-                            cvzone.putTextRect(
-                                imgBackground, "Face Detected", (65, 200), thickness=2
-                            )
-                            cv2.waitKey(1)
-                            counter = 1
-                            modeType = 1
-                    else:
-                        cvzone.putTextRect(
-                            imgBackground, "Face Detected", (65, 200), thickness=2
-                        )
-                        cv2.waitKey(3)
-                        cvzone.putTextRect(
-                            imgBackground, "Face Not Found", (65, 200), thickness=2
-                        )
-                        modeType = 4
-                        counter = 0
-                        imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[
-                            modeType
-                        ]
+                    if id not in already_marked_id_student:
+                        studentInfo, imgStudent = dataset(id)
 
-                if counter != 0:
-                    if counter == 1:
-                        studentInfo, imgStudent  = dataset(id)
-                        
                         ref = db.reference(f"Students/{id}")
-                        
-                        modeType = 3
-                        counter = 0
-                        imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[
-                            modeType
-                        ]
 
+                        modeType = 3
                         already_marked_id_student.append(id)
                         already_marked_id_admin.append(id)
 
-                    if modeType != 3:
-                        if 5 < counter <= 10:
-                            modeType = 2
+                        imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
 
-                        imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[
-                            modeType
-                        ]
+                        (w, h), _ = cv2.getTextSize(
+                            str(studentInfo["name"]), cv2.FONT_HERSHEY_COMPLEX, 1, 1
+                        )
+                        offset = (414 - w) // 2
 
-                        if counter <= 5:
-                            (w, h), _ = cv2.getTextSize(
-                                str(studentInfo["name"]), cv2.FONT_HERSHEY_COMPLEX, 1, 1
-                            )
+                        cv2.putText(
+                            imgBackground,
+                            str(studentInfo["name"]),
+                            (808 + offset, 445),
+                            cv2.FONT_HERSHEY_COMPLEX,
+                            1,
+                            (50, 50, 50),
+                            1,
+                        )
 
-                            offset = (414 - w) // 2
-                            cv2.putText(
-                                imgBackground,
-                                str(studentInfo["name"]),
-                                (808 + offset, 445),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                1,
-                                (50, 50, 50),
-                                1,
-                            )
+                        imgStudentResize = cv2.resize(imgStudent, (216, 216))
+                        imgBackground[175:175 + 216, 909:909 + 216] = imgStudentResize
 
-                            imgStudentResize = cv2.resize(imgStudent, (216, 216))
+                else:
+                    cvzone.putTextRect(
+                        imgBackground, "Face Detected", (65, 200), thickness=2
+                    )
+                    cv2.waitKey(3)
+                    cvzone.putTextRect(
+                        imgBackground, "Face Not Found", (65, 200), thickness=2
+                    )
+                    modeType = 4
+                    imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
 
-                            imgBackground[
-                                175 : 175 + 216, 909 : 909 + 216
-                            ] = imgStudentResize
+        else:
+            modeType = 0
 
-                        counter += 1
-
-                        if counter >= 10:
-                            counter = 0
-                            modeType = 0
-                            studentInfo = []
-                            imgStudent = []
-                            imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[
-                                modeType
-                            ]
-
-            else:
-                modeType = 0
-                counter = 0
-
-            ret, buffer = cv2.imencode(".jpeg", imgBackground)
-            frame = buffer.tobytes()
+        ret, buffer = cv2.imencode(".jpeg", imgBackground)
+        frame = buffer.tobytes()
 
         yield (b"--frame\r\n" b"Content-Type: image/jpeg \r\n\r\n" + frame + b"\r\n")
+
 
 
 #########################################################################################################################
