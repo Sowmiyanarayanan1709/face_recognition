@@ -196,8 +196,6 @@ def add_user():
         filename = f"{'static/Files/Images'}/{id}.jpg"
         image.save(os.path.join(filename))
 
-    studentIDs, imgList = add_image_database()
-
     encodeListKnown = findEncodings(imgList)
 
     encodeListKnownWithIds = [encodeListKnown, studentIDs]
@@ -206,9 +204,8 @@ def add_user():
     pickle.dump(encodeListKnownWithIds, file)
     file.close()
 
-    if id:
+    if id and name and password and email and image:
         add_student = db.reference(f"Students")
-
         add_student.child(id).set(
             {
                 "id": id,
@@ -217,11 +214,10 @@ def add_user():
                 "email": email
             }
         )
+        studentIDs, imgList = add_image_database()
+        return render_template("index.html")
 
-    return render_template("index.html")
-
-
-
+    return render_template("add_user.html")
 
 #########################################################################################################################
 if __name__ == "__main__":
