@@ -11,8 +11,8 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(
     cred,
     {
-        "databaseURL": "<paste here>",
-        # database URL
+        "databaseURL": "https://facerecognition-5980a-default-rtdb.firebaseio.com/",
+        "storageBucket": "facerecognition-5980a.appspot.com",
     },
 )
 

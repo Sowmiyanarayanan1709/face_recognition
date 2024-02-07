@@ -6,7 +6,7 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(
     cred,
     {
-        "databaseURL": "<paste here>",
+        "databaseURL": "https://facerecognition-5980a-default-rtdb.firebaseio.com/",
         # database URL
     },
 )
@@ -24,6 +24,43 @@ data = {
         "address": "Barrie, Ontario",
         "phone": "2348657951",
         "email": "samratthapa@gmail.com",
+        "major": "Data Science",
+        "starting_year": 2020,
+        "standing": "G",
+        "total_attendance": 4,
+        "year": 2,
+        "last_attendance_time": "2023-02-21 12:33:10",
+        "content": "This section aims to offer essential guidance for students to successfully complete the course. It will be regularly updated \
+                to ensure its relevance and usefulness. Stay tuned for valuable \
+                insights and tips that will help you excel in your studies.",
+    },
+
+    "777777": {  # id of student which is a key
+        "id": "777777",
+        "name": "Sowmi",
+        "password": "January2001",
+        "dob": "2001-09-01",
+        "address": "Barrie, Ontario",
+        "phone": "9876543210",
+        "email": "samratthapa@gmail.com",
+        "major": "Data Science",
+        "starting_year": 2021,
+        "standing": "G",
+        "total_attendance": 4,
+        "year": 1,
+        "last_attendance_time": "2023-02-21 12:33:10",
+        "content": "This section aims to offer essential guidance for students to successfully complete the course. It will be regularly updated \
+                to ensure its relevance and usefulness. Stay tuned for valuable \
+                insights and tips that will help you excel in your studies.",
+    },
+    "111111": {  # id of student which is a key
+        "id": "111111",
+        "name": "Admin",
+        "password": "admin001",
+        "dob": "1997-08-02",
+        "address": "Barrie, Ontario",
+        "phone": "2348657951",
+        "email": "admin@gmail.com",
         "major": "Data Science",
         "starting_year": 2020,
         "standing": "G",

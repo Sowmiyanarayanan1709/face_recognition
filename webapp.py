@@ -22,8 +22,8 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(
     cred,
     {
-        "databaseURL": "<paste here>",
-        "storageBucket": "<paste here>",
+        "databaseURL": "https://facerecognition-5980a-default-rtdb.firebaseio.com/",
+        "storageBucket": "facerecognition-5980a.appspot.com",
     },
 )
 
@@ -35,11 +35,7 @@ def dataset(id):
     blob = bucket.get_blob(f"static/Files/Images/{id}.jpg")
     array = np.frombuffer(blob.download_as_string(), np.uint8)
     imgStudent = cv2.imdecode(array, cv2.COLOR_BGRA2BGR)
-    datetimeObject = datetime.strptime(
-        studentInfo["last_attendance_time"], "%Y-%m-%d %H:%M:%S"
-    )
-    secondElapsed = (datetime.now() - datetimeObject).total_seconds()
-    return studentInfo, imgStudent, secondElapsed
+    return studentInfo, imgStudent
 
 
 already_marked_id_student = []
@@ -138,25 +134,18 @@ def generate_frame():
 
                 if counter != 0:
                     if counter == 1:
-                        studentInfo, imgStudent, secondElapsed = dataset(id)
-                        if secondElapsed > 60:
-                            ref = db.reference(f"Students/{id}")
-                            studentInfo["total_attendance"] += 1
-                            ref.child("total_attendance").set(
-                                studentInfo["total_attendance"]
-                            )
-                            ref.child("last_attendance_time").set(
-                                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            )
-                        else:
-                            modeType = 3
-                            counter = 0
-                            imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[
-                                modeType
-                            ]
+                        studentInfo, imgStudent  = dataset(id)
+                        
+                        ref = db.reference(f"Students/{id}")
+                        
+                        modeType = 3
+                        counter = 0
+                        imgBackground[44 : 44 + 633, 808 : 808 + 414] = imgModeList[
+                            modeType
+                        ]
 
-                            already_marked_id_student.append(id)
-                            already_marked_id_admin.append(id)
+                        already_marked_id_student.append(id)
+                        already_marked_id_admin.append(id)
 
                     if modeType != 3:
                         if 5 < counter <= 10:
@@ -167,61 +156,6 @@ def generate_frame():
                         ]
 
                         if counter <= 5:
-                            cv2.putText(
-                                imgBackground,
-                                str(studentInfo["total_attendance"]),
-                                (861, 125),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                1,
-                                (255, 255, 255),
-                                1,
-                            )
-                            cv2.putText(
-                                imgBackground,
-                                str(studentInfo["major"]),
-                                (1006, 550),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                0.5,
-                                (255, 255, 255),
-                                1,
-                            )
-                            cv2.putText(
-                                imgBackground,
-                                str(id),
-                                (1006, 493),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                0.5,
-                                (255, 255, 255),
-                                1,
-                            )
-                            cv2.putText(
-                                imgBackground,
-                                str(studentInfo["standing"]),
-                                (910, 625),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                0.6,
-                                (100, 100, 100),
-                                1,
-                            )
-                            cv2.putText(
-                                imgBackground,
-                                str(studentInfo["year"]),
-                                (1025, 625),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                0.6,
-                                (100, 100, 100),
-                                1,
-                            )
-                            cv2.putText(
-                                imgBackground,
-                                str(studentInfo["starting_year"]),
-                                (1125, 625),
-                                cv2.FONT_HERSHEY_COMPLEX,
-                                0.6,
-                                (100, 100, 100),
-                                1,
-                            )
-
                             (w, h), _ = cv2.getTextSize(
                                 str(studentInfo["name"]), cv2.FONT_HERSHEY_COMPLEX, 1, 1
                             )
@@ -349,8 +283,8 @@ def admin_login():
             )
         else:
             if (
-                dataset(id)[0]["password"] == password
-                and dataset(id)[0]["email"] == email
+                dataset("111111")[0]["password"] == password
+                and dataset("111111")[0]["email"] == email
             ):
                 return redirect(url_for("admin"))
             else:
@@ -426,25 +360,7 @@ def add_user():
     id = request.form.get("id", False)
     name = request.form.get("name", False)
     password = request.form.get("password", False)
-    dob = request.form.get("dob", False)
-    city = request.form.get("city", False)
-    country = request.form.get("country", False)
-    phone = request.form.get("phone", False)
     email = request.form.get("email", False)
-    major = request.form.get("major", False)
-    starting_year = request.form.get("starting_year", False)
-    standing = request.form.get("standing", False)
-    total_attendance = request.form.get("total_attendance", False)
-    year = request.form.get("year", False)
-    last_attendance_date = request.form.get("last_attendance_date", False)
-    last_attendance_time = request.form.get("last_attendance_time", False)
-    content = request.form.get("content", False)
-
-    address = f"{city}, {country}"
-    last_attendance_datetime = f"{last_attendance_date} {last_attendance_time}:00"
-    year = int(year)
-    total_attendance = int(total_attendance)
-    starting_year = int(starting_year)
 
     if request.method == "POST":
         image = request.files["image"]
@@ -469,17 +385,7 @@ def add_user():
                 "id": id,
                 "name": name,
                 "password": password,
-                "dob": dob,
-                "address": address,
-                "phone": phone,
-                "email": email,
-                "major": major,
-                "starting_year": starting_year,
-                "standing": standing,
-                "total_attendance": total_attendance,
-                "year": year,
-                "last_attendance_time": last_attendance_datetime,
-                "content": content,
+                "email": email
             }
         )
 
@@ -526,17 +432,7 @@ def save_changes():
         {
             "id": dic_data["id"],
             "name": dic_data["name"],
-            "dob": dic_data["dob"],
-            "address": dic_data["address"],
-            "phone": dic_data["phone"],
             "email": dic_data["email"],
-            "major": dic_data["major"],
-            "starting_year": dic_data["starting_year"],
-            "standing": dic_data["standing"],
-            "total_attendance": dic_data["total_attendance"],
-            "year": dic_data["year"],
-            "last_attendance_time": dic_data["last_attendance_time"],
-            "content": dic_data["content"],
         }
     )
 
@@ -584,4 +480,4 @@ def delete_user():
 
 #########################################################################################################################
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=1600)
