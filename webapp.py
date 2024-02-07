@@ -73,7 +73,7 @@ def generate_frame():
 
         faceCurrentFrame = face_recognition.face_locations(imgSmall)
         encodeCurrentFrame = face_recognition.face_encodings(imgSmall, faceCurrentFrame)
-
+ 
         imgBackground[162:162 + 480, 55:55 + 640] = img
 
         if faceCurrentFrame:
@@ -196,7 +196,7 @@ def add_user():
         filename = f"{'static/Files/Images'}/{id}.jpg"
         image.save(os.path.join(filename))
 
-    studentIDs, imgList = add_image_database()
+    
 
     encodeListKnown = findEncodings(imgList)
 
@@ -206,7 +206,7 @@ def add_user():
     pickle.dump(encodeListKnownWithIds, file)
     file.close()
 
-    if id:
+    if id and image and name and password and email:
         add_student = db.reference(f"Students")
 
         add_student.child(id).set(
@@ -218,7 +218,11 @@ def add_user():
             }
         )
 
-    return render_template("index.html")
+        studentIDs, imgList = add_image_database()
+
+        return render_template("index.html")
+
+    return render_template("add_user.html")
 
 
 
